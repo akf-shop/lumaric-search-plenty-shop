@@ -14,6 +14,7 @@
     "isClosedSource": true,
     "serviceProvider": "LumaricSearch\\Providers\\LumaricSearchServiceProvider",
     "require": [],
+    "type": "template",
     "platform": {
         "php": ">=7.3 <8.1"
     },
