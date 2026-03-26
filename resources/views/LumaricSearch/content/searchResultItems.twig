@@ -1,0 +1,20 @@
+{% set searchEnabled = config('LumaricSearch.searchEnabled') %}
+{% set baseUrl       = config('LumaricSearch.lumaricBaseUrl')|trim('/') %}
+{% set engineId      = config('LumaricSearch.lumaricEngineId') %}
+
+{# ── Inject Lumaric search result items ───────────────────────────────────── #}
+{# This block is injected on the search-results page via the container         #}
+{# "LumaricSearch::SearchResultItems".                                         #}
+{#                                                                              #}
+{# The <script> tag carries the ordered item list (product_number, document_id,#}
+{# position) produced by the PHP SearchController in JSON form.                #}
+{# The lumaric-items.js module reads this data and:                            #}
+{#   1. Annotates every product link with click-tracking query parameters.     #}
+{#   2. Provides the token so the product-detail page can fire click events.   #}
+{% if searchEnabled and baseUrl and engineId is not null %}
+    {% if lumaricSearchToken is defined and lumaricSearchToken and lumaricSearchItems is defined %}
+        <script type="application/json"
+                id="lumaric-search-items"
+                data-lumaric-search-token="{{ lumaricSearchToken|e('html_attr') }}">{{ lumaricSearchItems|json_encode }}</script>
+    {% endif %}
+{% endif %}

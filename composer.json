@@ -1,0 +1,16 @@
+{
+    "name": "lumaric/lumaric-search-plenty-one",
+    "description": "Lumaric Search plugin for PlentyOne",
+    "type": "plenty-plugin",
+    "autoload": {
+        "psr-4": {
+            "LumaricSearch\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "plentymarkets/plugin-interface": "*"
+    }
+}

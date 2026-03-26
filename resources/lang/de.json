@@ -1,0 +1,20 @@
+{
+    "LumaricSearch": {
+        "tab": {
+            "base": "Lumaric Search Basis-Einstellungen",
+            "export": "Lumaric Search Export Einstellungen"
+        },
+        "config": {
+            "searchEnabled":    "Suche aktivieren",
+            "suggestEnabled":   "Vorschläge aktivieren",
+            "lumaricBaseUrl":   "Lumaric Search Basis-URL",
+            "lumaricEngineId":  "Lumaric Search Engine ID",
+            "lumaricTemplateId":"Lumaric Search Template ID",
+            "skuFieldName":     "SKU Feldname",
+            "useSearchButton":  "Suchbutton aktivieren (mobil)",
+            "exportEnabled":    "Export aktivieren",
+            "shopUrl":          "Shop Basis-URL (für Produkt-URLs im Export)",
+            "apiKey":           "Lumaric Search API-Schlüssel"
+        }
+    }
+}

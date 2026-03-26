@@ -1,0 +1,73 @@
+[
+    {
+        "tab": "LumaricSearch.tab.base",
+        "key": "searchEnabled",
+        "label": "LumaricSearch.config.searchEnabled",
+        "type": "checkbox",
+        "default": false
+    },
+    {
+        "tab": "LumaricSearch.tab.base",
+        "key": "suggestEnabled",
+        "label": "LumaricSearch.config.suggestEnabled",
+        "type": "checkbox",
+        "default": false
+    },
+    {
+        "tab": "LumaricSearch.tab.base",
+        "key": "lumaricBaseUrl",
+        "label": "LumaricSearch.config.lumaricBaseUrl",
+        "type": "text",
+        "default": ""
+    },
+    {
+        "tab": "LumaricSearch.tab.base",
+        "key": "lumaricEngineId",
+        "label": "LumaricSearch.config.lumaricEngineId",
+        "type": "integer",
+        "default": null
+    },
+    {
+        "tab": "LumaricSearch.tab.base",
+        "key": "lumaricTemplateId",
+        "label": "LumaricSearch.config.lumaricTemplateId",
+        "type": "integer",
+        "default": null
+    },
+    {
+        "tab": "LumaricSearch.tab.base",
+        "key": "skuFieldName",
+        "label": "LumaricSearch.config.skuFieldName",
+        "type": "text",
+        "default": "sku"
+    },
+    {
+        "tab": "LumaricSearch.tab.base",
+        "key": "useSearchButton",
+        "label": "LumaricSearch.config.useSearchButton",
+        "type": "checkbox",
+        "default": false
+    },
+    {
+        "tab": "LumaricSearch.tab.export",
+        "key": "exportEnabled",
+        "label": "LumaricSearch.config.exportEnabled",
+        "type": "checkbox",
+        "default": false
+    },
+    {
+        "tab": "LumaricSearch.tab.export",
+        "key": "shopUrl",
+        "label": "LumaricSearch.config.shopUrl",
+        "type": "text",
+        "default": ""
+    },
+    {
+        "tab": "LumaricSearch.tab.export",
+        "key": "apiKey",
+        "label": "LumaricSearch.config.apiKey",
+        "type": "text",
+        "default": ""
+    }
+]
+

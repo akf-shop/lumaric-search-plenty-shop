@@ -1,0 +1,40 @@
+{
+    "name": "LumaricSearch",
+    "namespace": "LumaricSearch",
+    "author": "Lumaric",
+    "keywords": ["search", "lumaric", "ai-search"],
+    "description": "Lumaric AI Search integration for plentyShop",
+    "authorIcon": "",
+    "email": "support@lumaric.com",
+    "phone": "",
+    "price": 0.00,
+    "homepage": "https://lumaric.com",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "isClosedSource": true,
+    "serviceProvider": "LumaricSearch\\Providers\\LumaricSearchServiceProvider",
+    "require": [],
+    "platform": {
+        "php": ">=7.3 <8.1"
+    },
+    "containers": [
+        {
+            "key": "LumaricSearch::GlobalScripts",
+            "name": "Lumaric Search Global Scripts",
+            "description": "Injects Lumaric config and client script on every page. Connect to: Ceres::Script.AfterScriptsLoaded",
+            "multiple": false,
+            "defaultContentContainers": [
+                "Ceres::Script.AfterScriptsLoaded"
+            ]
+        },
+        {
+            "key": "LumaricSearch::SearchResultItems",
+            "name": "Lumaric Search Result Items",
+            "description": "Injects Lumaric search result metadata for click tracking on the search results page. Connect to: Ceres::SearchPage.BeforeSearchFilters",
+            "multiple": false,
+            "defaultContentContainers": [
+                "Ceres::SearchPage.BeforeSearchFilters"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,109 @@
+{# ─────────────────────────────────────────────────────────────────────────── #}
+{# LumaricSearch/Layouts/globalScripts.twig                                    #}
+{# Registered as content container "LumaricSearch::GlobalScripts".             #}
+{# Connect to "Ceres::Script.AfterScriptsLoaded" in your plugin-set settings.  #}
+{# ─────────────────────────────────────────────────────────────────────────── #}
+{% set suggestEnabled  = config('LumaricSearch.suggestEnabled')  %}
+{% set searchEnabled   = config('LumaricSearch.searchEnabled')   %}
+{% set baseUrl         = config('LumaricSearch.lumaricBaseUrl')|trim('/')  %}
+{% set engineId        = config('LumaricSearch.lumaricEngineId') %}
+{% set templateId      = config('LumaricSearch.lumaricTemplateId') %}
+
+{# ── Lumaric suggest widget ────────────────────────────────────────────────── #}
+{# Loads the Lumaric client.js from the configured base URL and sets up the    #}
+{# suggest drop-down on any input with the class "lumaric-search".             #}
+{% if baseUrl and engineId is not null and templateId is not null and suggestEnabled %}
+    {# Inline config so client.js can initialise without an extra round-trip   #}
+    <template id="lumaric-config">{{ {
+        baseUrl:    baseUrl,
+        engineId:   engineId,
+        templateId: templateId
+    }|json_encode }}</template>
+
+    <script type="module" src="{{ baseUrl }}/client.js"></script>
+
+    {# lumaric-search.js handles DOM ordering of search results and click     #}
+    {# tracking parameter injection. It also marks the search input field     #}
+    {# with class "lumaric-search" so the Lumaric widget can attach.          #}
+    <script src="{{ plugin_path('LumaricSearch') }}/js/lumaric-search.js" defer></script>
+{% endif %}
+
+{# ── Product detail page: click tracking ──────────────────────────────────── #}
+{# Parses lumaricDocumentId / lumaricSearchToken / lumaricDocumentPosition from #}
+{# the URL, fires a click event to the Lumaric API, and injects the returned   #}
+{# click token into every "Add to cart" form on the page.                     #}
+{% if baseUrl and engineId is not null and controllerName|lower == 'item' %}
+    <script>
+    (() => {
+        const apiUrl  = '{{ baseUrl }}/api';
+        const engineId = {{ engineId }};
+
+        const insertClickToken = (clickToken) => {
+            const addToCartForms = document.querySelectorAll('[data-plenty="addToBasket"], form[action*="basket"]');
+            for (const form of addToCartForms) {
+                let input = form.querySelector('input[name="{{ constant('LumaricSearch\\Services\\SearchService::CLICK_TOKEN_PARAMETER') }}"]');
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = '{{ constant('LumaricSearch\\Services\\SearchService::CLICK_TOKEN_PARAMETER') }}';
+                    form.appendChild(input);
+                }
+                input.value = clickToken;
+            }
+        };
+
+        const params         = new URLSearchParams(window.location.search);
+        const documentId     = params.get('lumaricDocumentId');
+        const searchToken    = params.get('lumaricSearchToken');
+        const position       = params.get('lumaricDocumentPosition');
+        const existingToken  = params.get('lumaricClickToken');
+
+        const validDocId    = documentId    !== null && !isNaN(Number(documentId));
+        const validToken    = searchToken   !== null && searchToken.trim()  !== '';
+        const validPos      = position      !== null && !isNaN(Number(position));
+        const validClickTok = existingToken !== null && existingToken.trim() !== '';
+
+        // Clean tracking parameters from the visible URL
+        if (validDocId || validToken || validPos || validClickTok) {
+            params.delete('lumaricDocumentId');
+            params.delete('lumaricSearchToken');
+            params.delete('lumaricDocumentPosition');
+            params.delete('lumaricClickToken');
+            history.replaceState(null, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Re-use an existing click token (e.g. passed from the suggest widget)
+            if (validClickTok) {
+                insertClickToken(existingToken);
+                return;
+            }
+
+            if (!validDocId || !validToken || !validPos) return;
+
+            try {
+                const response = await fetch(apiUrl + '/stats/click', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Engine': engineId,
+                    },
+                    body: JSON.stringify({
+                        document_id:  Number(documentId),
+                        search_token: searchToken,
+                        position:     Number(position),
+                    }),
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data       = await response.json();
+                const clickToken = data.token;
+                if (clickToken) insertClickToken(clickToken);
+            } catch (error) {
+                console.error('Lumaric: error tracking click', error);
+            }
+        });
+    })();
+    </script>
+{% endif %}
