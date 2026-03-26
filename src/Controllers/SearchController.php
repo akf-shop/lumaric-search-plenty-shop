@@ -47,7 +47,7 @@ class SearchController
 
     public function test(): Response
     {
-        return $this->json(['success' => true]);
+        return $this->json(['success1' => true]);
     }
 
     public function search(Request $request): Response

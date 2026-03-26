@@ -10,7 +10,6 @@ use Plenty\Modules\Cron\Services\CronContainer;
 use Plenty\Modules\Order\Events\OrderCreated;
 use Plenty\Plugin\Events\Dispatcher;
 use Plenty\Plugin\ServiceProvider;
-use Plenty\Plugin\Templates\Twig;
 
 class LumaricSearchServiceProvider extends ServiceProvider
 {
@@ -19,7 +18,7 @@ class LumaricSearchServiceProvider extends ServiceProvider
         $this->getApplication()->register(LumaricSearchRouteServiceProvider::class);
     }
 
-    public function boot(Twig $twig, Dispatcher $dispatcher, CronContainer $cronContainer): void
+    public function boot(Dispatcher $dispatcher, CronContainer $cronContainer): void
     {
         // ── Scheduled exports ─────────────────────────────────────────────────
         // Exports all active variations and uploads them to the Lumaric API once
