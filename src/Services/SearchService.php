@@ -313,47 +313,78 @@ class SearchService
             $curlHeaders[] = 'Content-Type: application/json';
         }
 
-        $responseHeaders = [];
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $curlHeaders);
-        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($curl, $headerLine) use (&$responseHeaders) {
-            $trimmed = trim($headerLine);
-            if ($trimmed === '' || strpos($trimmed, ':') === false) {
+        $httpVersions = [CURL_HTTP_VERSION_2TLS, CURL_HTTP_VERSION_1_1];
+        $lastError = '';
+
+        foreach ($httpVersions as $index => $httpVersion) {
+            $responseHeaders = [];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, min(5, $timeout));
+            curl_setopt($ch, CURLOPT_HTTP_VERSION, $httpVersion);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $curlHeaders);
+            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($curl, $headerLine) use (&$responseHeaders) {
+                $trimmed = trim($headerLine);
+                if ($trimmed === '' || strpos($trimmed, ':') === false) {
+                    return strlen($headerLine);
+                }
+
+                list($name, $value) = explode(':', $trimmed, 2);
+                $name = strtolower(trim($name));
+                if (!isset($responseHeaders[$name])) {
+                    $responseHeaders[$name] = [];
+                }
+                $responseHeaders[$name][] = trim($value);
+
                 return strlen($headerLine);
+            });
+
+            if ($jsonBody !== null) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($jsonBody));
             }
 
-            list($name, $value) = explode(':', $trimmed, 2);
-            $name = strtolower(trim($name));
-            if (!isset($responseHeaders[$name])) {
-                $responseHeaders[$name] = [];
+            $body = curl_exec($ch);
+            if ($body !== false) {
+                $statusCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                return [
+                    'statusCode' => $statusCode,
+                    'body' => (string) $body,
+                    'headers' => $responseHeaders,
+                ];
             }
-            $responseHeaders[$name][] = trim($value);
 
-            return strlen($headerLine);
-        });
-
-        if ($jsonBody !== null) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($jsonBody));
-        }
-
-        $body = curl_exec($ch);
-        if ($body === false) {
+            $errorNo = curl_errno($ch);
             $error = curl_error($ch);
             curl_close($ch);
-            throw new \RuntimeException('cURL request failed: ' . $error);
+            $lastError = $error;
+
+            if (!$this->isRetryableHttp2Error($errorNo, $error) || $index === count($httpVersions) - 1) {
+                throw new \RuntimeException('cURL request failed: ' . $error);
+            }
+
+            $this->getLogger(__METHOD__)->warning('Retrying cURL request with HTTP/1.1 fallback after HTTP/2 error', [
+                'url' => $url,
+                'error' => $error,
+            ]);
         }
 
-        $statusCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        throw new \RuntimeException('cURL request failed: ' . $lastError);
+    }
 
-        return [
-            'statusCode' => $statusCode,
-            'body' => (string) $body,
-            'headers' => $responseHeaders,
-        ];
+    private function isRetryableHttp2Error(int $errorNo, string $error): bool
+    {
+        $curlHttp2ErrorCode = defined('CURLE_HTTP2') ? (int) CURLE_HTTP2 : 16;
+
+        if ($errorNo === $curlHttp2ErrorCode) {
+            return true;
+        }
+
+        return stripos($error, 'HTTP/2') !== false;
     }
 }
