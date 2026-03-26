@@ -47,13 +47,13 @@ class SearchController
 
     public function test(): Response
     {
-        return $this->json(['success1' => true]);
+        return $this->json(['success' => true]);
     }
 
     public function search(Request $request): Response
     {
         if (!$this->config->get('LumaricSearch.searchEnabled', false)) {
-            return $this->json(null);
+            return $this->json(['state' => 'disabled']);
         }
 
         $query    = (string)  ($request->input('query', ''));

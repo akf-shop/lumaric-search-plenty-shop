@@ -40,7 +40,7 @@ class SearchService
         $fieldName = $this->config->get('LumaricSearch.skuFieldName', 'sku');
 
         if (!$apiUrl || $engineId === null || !$fieldName) {
-            return null;
+            return ['state' => 'error', 'message' => 'Invalid configuration', 'apiUrl' => $apiUrl, 'engineId' => $engineId, 'fieldName' => $fieldName];
         }
 
         if (trim($search) === '') {
@@ -120,7 +120,7 @@ class SearchService
                 'search'    => $search,
             ]);
 
-            return null;
+            return ['state' => 'error', 'exception' => $e->getMessage()];
         }
     }
 
