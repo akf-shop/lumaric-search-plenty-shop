@@ -45,6 +45,11 @@ class SearchController
         $this->response = $response;
     }
 
+    public function test(): Response
+    {
+        return $this->json(['success' => true]);
+    }
+
     public function search(Request $request): Response
     {
         if (!$this->config->get('LumaricSearch.searchEnabled', false)) {

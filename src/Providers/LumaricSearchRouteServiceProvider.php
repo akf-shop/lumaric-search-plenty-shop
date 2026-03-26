@@ -10,6 +10,8 @@ class LumaricSearchRouteServiceProvider extends RouteServiceProvider
 {
     public function map(Router $router): void
     {
+        $router->get('lumaric/search/test', SearchController::class . '@test');
+
         // Full-text search — frontend POSTs { query, page, pageSize } and receives
         // a JSON object of { items, token, total, page, pageSize }.
         $router->post('lumaric/search', SearchController::class . '@search');
